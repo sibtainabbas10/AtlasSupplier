@@ -80,17 +80,26 @@ public class AtlasService {
                 connection.setAutoCommit(false);
 
                 // CallableStatement cstmt = connection.prepareCall("{CALL APPS.xxtln_i2_coupa.generate_charge_account(?,?,?)}");
-                CallableStatement cstmt = connection.prepareCall("{CALL APPS.xxtln_i2_coupa.create_sup(?,?,?)}");
+                CallableStatement cstmt = connection.prepareCall("{CALL APPS.xxtln_i2_coupa.create_sup(?,?,?,?)}");
                 cstmt.setString(1, xml);
                 //cstmt.setString(2, atlas.getLookupName());
                 //cstmt.setString(3, atlas.getLastRunAt());
 
                 cstmt.registerOutParameter(2, java.sql.Types.VARCHAR);
                 cstmt.registerOutParameter(3, java.sql.Types.VARCHAR);
+                cstmt.registerOutParameter(4, java.sql.Types.INTEGER);
                 cstmt.executeUpdate();
-                System.out.println("Output" + cstmt.getString(2));
-                  System.out.println("Output" + cstmt.getString(3));
-                response.setStatus(Constants.Status.SUCCESS);
+                System.out.println("Status: " + cstmt.getString(2));
+                System.out.println("Error: " + cstmt.getString(3));
+                System.out.println("Vendor ID: " + cstmt.getString(4));
+                
+                if (cstmt.getString(2) == "S") {
+                    response.setStatus(Constants.Status.SUCCESS);
+                } else if (cstmt.getString(2) == "E") {
+                    response.setStatus(Constants.Status.ERROR);
+                }
+                
+                
                 response.setMessage(cstmt.getString(2));
                 return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
